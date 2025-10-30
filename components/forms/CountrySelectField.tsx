@@ -24,7 +24,7 @@ import countryList from "react-select-country-list";
 type CountrySelectProps = {
   name: string;
   label: string;
-  control: Control<any>;
+  control: Control;
   error?: FieldError;
   required?: boolean;
 };
