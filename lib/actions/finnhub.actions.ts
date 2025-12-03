@@ -262,3 +262,60 @@ export async function searchStocks(
     return [];
   }
 }
+
+export async function getCompanyProfile(
+  symbol: string
+): Promise<{ name: string; exchange?: string } | null> {
+  try {
+    const token = getFinnhubApiKey();
+
+    if (!token || token === "") {
+      console.error("FINNHUB API key is not configured");
+      return null;
+    }
+
+    const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(
+      symbol.toUpperCase()
+    )}&token=${token}`;
+
+    const profile = await fetchJSON<{
+      name?: string;
+      ticker?: string;
+      exchange?: string;
+    }>(url, 3600);
+
+    if (!profile?.name) {
+      return null;
+    }
+
+    return {
+      name: profile.name,
+      exchange: profile.exchange,
+    };
+  } catch (err) {
+    console.error("Error fetching company profile:", err);
+    return null;
+  }
+}
+
+export async function getQuote(symbol: string): Promise<QuoteData | null> {
+  try {
+    const token = getFinnhubApiKey();
+
+    if (!token || token === "") {
+      console.error("FINNHUB API key is not configured");
+      return null;
+    }
+
+    const url = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(
+      symbol.toUpperCase()
+    )}&token=${token}`;
+
+    const quote = await fetchJSON<QuoteData>(url, 60);
+
+    return quote || null;
+  } catch (err) {
+    console.error(`Error fetching quote for ${symbol}:`, err);
+    return null;
+  }
+}
