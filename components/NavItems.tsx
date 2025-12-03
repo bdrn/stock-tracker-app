@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { NAV_ITEMS } from "@/lib/constants";
 import { usePathname } from "next/navigation";
+import SearchCommand from "@/components/SearchCommand";
 
 const NavItems = () => {
   const pathname = usePathname();
@@ -16,14 +17,18 @@ const NavItems = () => {
     <ul className="flex flex-col sm:flex-row p-2 gap-3 sm:gap-10 font-medium">
       {NAV_ITEMS.map(({ href, label }) => (
         <li key={href}>
-          <Link
-            href={href}
-            className={`hover:text-yellow-500 transition-colors ${
-              isActive(href) ? "text-gray-100" : ""
-            }`}
-          >
-            {label}
-          </Link>
+          {label === "Search" ? (
+            <SearchCommand renderAs="text" label={label} initialStocks={[]} />
+          ) : (
+            <Link
+              href={href}
+              className={`hover:text-yellow-500 transition-colors ${
+                isActive(href) ? "text-gray-100" : ""
+              }`}
+            >
+              {label}
+            </Link>
+          )}
         </li>
       ))}
     </ul>
