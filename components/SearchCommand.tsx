@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   CommandDialog,
   CommandEmpty,
@@ -8,14 +9,21 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Loader2, TrendingUp } from "lucide-react";
+import { Loader2, TrendingUp, Star } from "lucide-react";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
+import {
+  addStockToWatchlist,
+  removeStockFromWatchlist,
+  isStockInWatchlist,
+} from "@/lib/actions/watchlist.actions";
+import { toast } from "sonner";
 
 export default function SearchCommand({
   renderAs = "button",
   label = "Add stock",
   initialStocks = [],
 }: SearchCommandProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,7 +61,8 @@ export default function SearchCommand({
 
     const loadInitialStocks = async () => {
       if (initialStocks && initialStocks.length > 0) {
-        setPopularStocks(initialStocks);
+        const stocksWithStatus = await checkWatchlistStatus(initialStocks);
+        setPopularStocks(stocksWithStatus);
         initialStocksLoaded.current = true;
         return;
       }
@@ -61,7 +70,10 @@ export default function SearchCommand({
       setLoading(true);
       try {
         const fetchedStocks = await searchStocks();
-        setPopularStocks(fetchedStocks || []);
+        const stocksWithStatus = await checkWatchlistStatus(
+          fetchedStocks || []
+        );
+        setPopularStocks(stocksWithStatus);
         initialStocksLoaded.current = true;
       } catch (error) {
         console.error("Error loading initial stocks:", error);
@@ -86,7 +98,8 @@ export default function SearchCommand({
         console.log("Searching for:", searchTerm.trim());
         const results = await searchStocks(searchTerm.trim());
         console.log("Search results received:", results);
-        setSearchResults(results || []);
+        const stocksWithStatus = await checkWatchlistStatus(results || []);
+        setSearchResults(stocksWithStatus);
       } catch (error) {
         console.error("Error searching stocks:", error);
         setSearchResults([]);
@@ -99,10 +112,64 @@ export default function SearchCommand({
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
 
-  const handleSelectStock = () => {
+  const handleSelectStock = (symbol: string) => {
     setOpen(false);
     setSearchTerm("");
     setSearchResults([]);
+    router.push(`/stocks/${symbol}`);
+  };
+
+  const handleToggleWatchlist = async (
+    e: React.MouseEvent,
+    stock: StockWithWatchlistStatus
+  ) => {
+    e.stopPropagation();
+
+    try {
+      if (stock.isInWatchlist) {
+        const result = await removeStockFromWatchlist(stock.symbol);
+        if (result.success) {
+          toast.success(`${stock.name} removed from watchlist`);
+          updateWatchlistStatus(stock.symbol, false);
+        } else {
+          toast.error(result.error || "Failed to remove from watchlist");
+        }
+      } else {
+        const result = await addStockToWatchlist(stock.symbol, stock.name);
+        if (result.success) {
+          toast.success(`${stock.name} added to watchlist`);
+          updateWatchlistStatus(stock.symbol, true);
+        } else {
+          toast.error(result.error || "Failed to add to watchlist");
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling watchlist:", error);
+      toast.error("An error occurred");
+    }
+  };
+
+  const updateWatchlistStatus = (symbol: string, isInWatchlist: boolean) => {
+    setPopularStocks((prev) =>
+      prev.map((stock) =>
+        stock.symbol === symbol ? { ...stock, isInWatchlist } : stock
+      )
+    );
+    setSearchResults((prev) =>
+      prev.map((stock) =>
+        stock.symbol === symbol ? { ...stock, isInWatchlist } : stock
+      )
+    );
+  };
+
+  const checkWatchlistStatus = async (stocks: StockWithWatchlistStatus[]) => {
+    const statusChecks = await Promise.all(
+      stocks.map(async (stock) => {
+        const isInWatchlist = await isStockInWatchlist(stock.symbol);
+        return { ...stock, isInWatchlist };
+      })
+    );
+    return statusChecks;
   };
 
   return (
@@ -156,7 +223,7 @@ export default function SearchCommand({
                   <div
                     onClick={() => {
                       console.log(`Selected stock: ${stock.symbol}`);
-                      handleSelectStock();
+                      handleSelectStock(stock.symbol);
                     }}
                     className="search-item-link cursor-pointer"
                   >
@@ -167,7 +234,25 @@ export default function SearchCommand({
                         {stock.symbol} | {stock.exchange} | {stock.type}
                       </div>
                     </div>
-                    {/*<Star />*/}
+                    <button
+                      onClick={(e) => handleToggleWatchlist(e, stock)}
+                      className={`ml-2 p-1 rounded hover:bg-gray-800 transition-colors ${
+                        stock.isInWatchlist
+                          ? "text-yellow-500 fill-yellow-500"
+                          : "text-gray-500"
+                      }`}
+                      aria-label={
+                        stock.isInWatchlist
+                          ? "Remove from watchlist"
+                          : "Add to watchlist"
+                      }
+                    >
+                      <Star
+                        className={`h-4 w-4 ${
+                          stock.isInWatchlist ? "fill-current" : ""
+                        }`}
+                      />
+                    </button>
                   </div>
                 </li>
               ))}
