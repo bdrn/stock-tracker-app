@@ -27,8 +27,7 @@ export function validateArticle(article: RawNewsArticle): boolean {
 export function formatArticle(
   article: RawNewsArticle,
   isCompanyNews: boolean = false,
-  symbol?: string,
-  index?: number
+  symbol?: string
 ): MarketNewsArticle {
   return {
     id: article.id!,
