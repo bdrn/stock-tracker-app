@@ -74,7 +74,7 @@ export async function getNews(
           if (list.length === 0) continue;
           const article = list.shift();
           if (!article || !validateArticle(article)) continue;
-          collected.push(formatArticle(article, true, sym, round));
+          collected.push(formatArticle(article, true, sym));
           if (collected.length >= maxArticles) break;
         }
         if (collected.length >= maxArticles) break;
@@ -105,7 +105,7 @@ export async function getNews(
 
     const formatted = unique
       .slice(0, maxArticles)
-      .map((a, idx) => formatArticle(a, false, undefined, idx));
+      .map((a) => formatArticle(a, false, undefined));
     return formatted;
   } catch (err) {
     console.error("getNews error:", err);
@@ -215,8 +215,8 @@ export async function searchStocks(
     }
 
     if (!results || results.length === 0) {
-      return [];
-    }
+        return [];
+      }
 
     const mapped: StockWithWatchlistStatus[] = results
       .filter((r) => {

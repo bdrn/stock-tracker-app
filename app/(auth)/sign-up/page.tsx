@@ -1,5 +1,5 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { useForm, Control, FieldValues } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/InputField";
 import SelectField from "@/components/forms/SelectField";
@@ -94,7 +94,7 @@ const SignUp = () => {
         <CountrySelectField
           name="country"
           label="Country"
-          control={control}
+          control={control as unknown as Control<FieldValues>}
           error={errors.country}
           required
         />
@@ -104,7 +104,7 @@ const SignUp = () => {
           label="Select your investment goal"
           placeholder="Select your investment goal"
           options={INVESTMENT_GOALS}
-          control={control}
+          control={control as unknown as Control<FieldValues>}
           error={errors.investmentGoals}
           required
         />
@@ -114,7 +114,7 @@ const SignUp = () => {
           label="Select your risk level"
           placeholder="Select your investment goal"
           options={RISK_TOLERANCE_OPTIONS}
-          control={control}
+          control={control as unknown as Control<FieldValues>}
           error={errors.riskTolerance}
           required
         />
@@ -124,7 +124,7 @@ const SignUp = () => {
           label="Preferred Industry"
           placeholder="Select your investment goal"
           options={PREFERRED_INDUSTRIES}
-          control={control}
+          control={control as unknown as Control<FieldValues>}
           error={errors.preferredIndustry}
           required
         />

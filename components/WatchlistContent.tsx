@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import WatchlistButton from "@/components/WatchlistButton";
 import Link from "next/link";

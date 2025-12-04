@@ -34,6 +34,7 @@ export const sendWelcomeEmail = async ({
 
 export const sendNewsEmail = async ({
   email,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   name: _name, // Reserved for future template personalization
   date,
   newsContent,

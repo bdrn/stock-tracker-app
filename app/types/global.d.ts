@@ -17,7 +17,7 @@ declare global {
   type CountrySelectProps = {
     name: string;
     label: string;
-    control: Control;
+    control: Control<FieldValues>;
     error?: FieldError;
     required?: boolean;
   };
@@ -44,7 +44,7 @@ declare global {
     label: string;
     placeholder: string;
     options: readonly Option[];
-    control: Control;
+    control: Control<FieldValues>;
     error?: FieldError;
     required?: boolean;
   };
